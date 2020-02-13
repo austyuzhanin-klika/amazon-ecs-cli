@@ -48,6 +48,8 @@ func TestCreateClusterWithEC2Task(t *testing.T) {
 
 	// Create a new task with 2 containers.
 	cmd.TestTaskUp(t, project)
+	defer cmd.TestDown(t, conf)
+	defer cmd.TestTaskDown(t, project)
 	ecs.TestListTasks(t, conf.ClusterName, 1)
 	cmd.TestPsRunning(t, project, 2)
 

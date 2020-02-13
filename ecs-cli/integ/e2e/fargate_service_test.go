@@ -44,6 +44,8 @@ func TestCreateClusterWithFargateService(t *testing.T) {
 	// Create a new service
 	cmd.TestServiceUp(t, project)
 	cmd.TestServicePs(t, project, 1)
+	defer cmd.TestDown(t, conf)
+	defer cmd.TestServiceDown(t, project)
 
 	// Increase the number of running tasks
 	cmd.TestServiceScale(t, project, 2)
