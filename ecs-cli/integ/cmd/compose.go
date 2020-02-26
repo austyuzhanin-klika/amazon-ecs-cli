@@ -202,6 +202,7 @@ func TestTaskDown(t *testing.T, p *Project) {
 
 // TestServiceDown runs `ecs-cli compose service down` for a project.
 func TestServiceDown(t *testing.T, p *Project) {
+	fmt.Println("GOT TO TEST SERVICE DOWN")
 	// Given
 	args := []string{
 		"compose",
