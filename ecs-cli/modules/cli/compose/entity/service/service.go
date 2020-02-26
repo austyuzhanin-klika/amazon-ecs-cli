@@ -663,6 +663,10 @@ func (s *Service) createService(desiredCount int) error {
 		return err
 	}
 
+	err = waitForServiceDescribable(s)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
