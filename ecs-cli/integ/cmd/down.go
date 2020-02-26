@@ -27,6 +27,7 @@ import (
 
 // TestDown runs `ecs-cli down` to remove a cluster.
 func TestDown(t *testing.T, conf *CLIConfig) {
+	fmt.Println("GOT TO CLUSTER DOWN")
 	// Given
 	args := []string{
 		"down",
