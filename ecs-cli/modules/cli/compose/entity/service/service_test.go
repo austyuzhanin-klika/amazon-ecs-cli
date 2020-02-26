@@ -772,7 +772,6 @@ func getCreateServiceWithDelayMockClient(t *testing.T,
 		RunningCount:   aws.Int64(0),
 		ServiceName:    aws.String("test-created"),
 	}
-	updatedService := *createdService
 	gomock.InOrder(
 		mockEcs.EXPECT().DescribeService(gomock.Any()).Return(getDescribeServiceTestResponse(nil), nil),
 
@@ -805,10 +804,7 @@ func getCreateServiceWithDelayMockClient(t *testing.T,
 
 		mockEcs.EXPECT().DescribeService(gomock.Any()).Return(getDescribeServiceTestResponse(nil), nil),
 		mockEcs.EXPECT().DescribeService(gomock.Any()).Return(getDescribeServiceTestResponse(createdService), nil).MaxTimes(2),
-		mockEcs.EXPECT().UpdateService(
-			gomock.Any(), // updateServiceInput
-		).Return(nil),
-		mockEcs.EXPECT().DescribeService(gomock.Any()).Return(getDescribeServiceTestResponse(updatedService.SetDeployments([]*ecs.Deployment{&ecs.Deployment{}}).SetDesiredCount(1).SetRunningCount(1)), nil),
+		// mockEcs.EXPECT().DescribeService(gomock.Any()).Return(getDescribeServiceTestResponse(updatedService.SetDeployments([]*ecs.Deployment{&ecs.Deployment{}}).SetDesiredCount(1).SetRunningCount(1)), nil),
 	)
 	return mockEcs
 }
