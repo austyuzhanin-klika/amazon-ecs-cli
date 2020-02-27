@@ -29,7 +29,7 @@
   revision = "cd527374f1e5bff4938207604a14f2e38a9cf512"
 
 [[projects]]
-  digest = "1:510d6fe3c4bda861cff20c5ac647d596e7d5cc40a2066df12f3bcd90d831185c"
+  digest = "1:279ab694a77b694f44d88f5020b43d16b8651e45c09970cd7ccdcbac8185550e"
   name = "github.com/aws/aws-sdk-go"
   packages = [
     "aws",
@@ -70,6 +70,7 @@
     "service/cloudformation/cloudformationiface",
     "service/cloudwatchlogs",
     "service/cloudwatchlogs/cloudwatchlogsiface",
+    "service/codedeploy",
     "service/ec2",
     "service/ec2/ec2iface",
     "service/ecr",
@@ -449,6 +450,7 @@
     "github.com/aws/aws-sdk-go/service/cloudformation/cloudformationiface",
     "github.com/aws/aws-sdk-go/service/cloudwatchlogs",
     "github.com/aws/aws-sdk-go/service/cloudwatchlogs/cloudwatchlogsiface",
+    "github.com/aws/aws-sdk-go/service/codedeploy",
     "github.com/aws/aws-sdk-go/service/ec2",
     "github.com/aws/aws-sdk-go/service/ec2/ec2iface",
     "github.com/aws/aws-sdk-go/service/ecr",

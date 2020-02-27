@@ -28,6 +28,14 @@ const (
 	LaunchTypeDefault = "EC2"
 )
 
+const (
+	// Deployment controller types are case sensitive
+	DeploymentControllerTypeECS        = "ECS"
+	DeploymentControllerTypeCodeDeploy = "CODE_DEPLOY"
+	DeploymentControllerTypeExternal   = "EXTERNAL"
+	DeploymentControllerTypeDefault    = "ECS"
+)
+
 // CommandConfig contains the configuration parameters and AWS Session required to run a specific command
 type CommandConfig struct {
 	Cluster                  string
@@ -36,6 +44,7 @@ type CommandConfig struct {
 	ComposeProjectNamePrefix string // Deprecated; remains for backwards compatibility
 	CFNStackName             string
 	LaunchType               string
+	DeploymentControllerType string
 }
 
 func (c *CommandConfig) Region() string {
@@ -92,6 +101,7 @@ func NewCommandConfig(context *cli.Context, rdwr ReadWriter) (*CommandConfig, er
 		ComposeProjectNamePrefix: ecsConfig.ComposeProjectNamePrefix, // deprecated; remains for backwards compatibility
 		CFNStackName:             ecsConfig.CFNStackName,
 		LaunchType:               ecsConfig.DefaultLaunchType,
+		DeploymentControllerType: ecsConfig.DefaultDeploymentControllerType,
 	}, nil
 }
 

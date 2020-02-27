@@ -14,6 +14,7 @@
 package service
 
 import (
+	"crypto/sha256"
 	"fmt"
 	"strconv"
 	"strings"
@@ -30,6 +31,7 @@ import (
 	"github.com/aws/amazon-ecs-cli/ecs-cli/modules/utils/cache"
 	composeutils "github.com/aws/amazon-ecs-cli/ecs-cli/modules/utils/compose"
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/codedeploy"
 	"github.com/aws/aws-sdk-go/service/ecs"
 	taggingSDK "github.com/aws/aws-sdk-go/service/resourcegroupstaggingapi"
 	"github.com/docker/libcompose/project"
@@ -340,6 +342,35 @@ func (s *Service) buildUpdateServiceInput(count *int64, serviceName, taskDefinit
 	return input, nil
 }
 
+func (s *Service) buildCreateDeploymentInput(count *int64, serviceName, taskDefinition string) (*codedeploy.CreateDeploymentInput, error) {
+	revision := `{"version":1,"Resources":[{"TargetService":{"Type":"AWS::ECS::Service","Properties":{"TaskDefinition":"%s"}}}]}`
+	revision = fmt.Sprintf(revision, taskDefinition)
+	revisionShaSum := sha256.Sum256([]byte(revision))
+	revisionShaSumString := fmt.Sprintf("%x", revisionShaSum)
+
+	applicationName := fmt.Sprintf("%s-%s", s.ecsContext.CommandConfig.Cluster, serviceName)
+	revisionType := codedeploy.RevisionLocationTypeAppSpecContent
+
+	input := &codedeploy.CreateDeploymentInput{
+		ApplicationName:     &applicationName,
+		DeploymentGroupName: &applicationName,
+		Revision: &codedeploy.RevisionLocation{
+			RevisionType: &revisionType,
+			AppSpecContent: &codedeploy.AppSpecContent{
+				Content: &revision,
+				Sha256:  &revisionShaSumString,
+			},
+		},
+	}
+	fmt.Printf("%+v\n", input)
+
+	// if taskDefinition != "" {
+	// 	input.TaskDefinition = aws.String(taskDefinition)
+	// }
+
+	return input, nil
+}
+
 func (s *Service) updateService(ecsService *ecs.Service, newTaskDefinition *ecs.TaskDefinition) error {
 	if s.Context().CLIContext.Bool(flags.EnableServiceDiscoveryFlag) {
 		return fmt.Errorf("Service Discovery can not be enabled on an existing ECS Service")
@@ -379,19 +410,33 @@ func (s *Service) updateService(ecsService *ecs.Service, newTaskDefinition *ecs.
 	// if the task definitions were different, updateService with new task definition
 	// this creates a deployment in ECS and slowly takes down the containers with old ones and starts new ones
 
-	updateServiceInput, err := s.buildUpdateServiceInput(count, ecsServiceName, newTaskDefinitionId)
-	if err != nil {
-		return err
-	}
+	if *ecsService.DeploymentController.Type == ecs.DeploymentControllerTypeCodeDeploy {
+		createDeploymentInput, err := s.buildCreateDeploymentInput(count, ecsServiceName, newTaskDefinitionId)
+		if err != nil {
+			return err
+		}
 
-	err = s.Context().ECSClient.UpdateService(updateServiceInput)
-	if err != nil {
-		return err
-	}
+		_, err = s.Context().CodeDeployClient.CreateDeployment(createDeploymentInput)
+		if err != nil {
+			return err
+		}
 
-	message := "Updated the ECS service with a new task definition. " +
-		"Old containers will be stopped automatically, and replaced with new ones"
-	s.logUpdateService(updateServiceInput, message)
+		return nil
+	} else {
+		updateServiceInput, err := s.buildUpdateServiceInput(count, ecsServiceName, newTaskDefinitionId)
+		if err != nil {
+			return err
+		}
+
+		err = s.Context().ECSClient.UpdateService(updateServiceInput)
+		if err != nil {
+			return err
+		}
+
+		message := "Updated the ECS service with a new task definition. " +
+			"Old containers will be stopped automatically, and replaced with new ones"
+		s.logUpdateService(updateServiceInput, message)
+	}
 
 	return waitForServiceTasks(s, ecsServiceName)
 }
@@ -500,6 +545,7 @@ func (s *Service) GetTags() ([]*ecs.Tag, error) {
 
 func (s *Service) buildCreateServiceInput(serviceName, taskDefName string) (*ecs.CreateServiceInput, error) {
 	launchType := s.Context().CommandConfig.LaunchType
+	deploymentControllerType := s.Context().CommandConfig.DeploymentControllerType
 	cluster := s.Context().CommandConfig.Cluster
 	ecsParams := s.ecsContext.ECSParams
 	schedulingStrategy := strings.ToUpper(s.Context().CLIContext.String(flags.SchedulingStrategyFlag))
@@ -565,6 +611,12 @@ func (s *Service) buildCreateServiceInput(serviceName, taskDefName string) (*ecs
 
 	if launchType != "" {
 		createServiceInput.LaunchType = aws.String(launchType)
+	}
+
+	if deploymentControllerType != "" {
+		createServiceInput.DeploymentController = &ecs.DeploymentController{
+			Type: aws.String(deploymentControllerType),
+		}
 	}
 
 	if err = createServiceInput.Validate(); err != nil {

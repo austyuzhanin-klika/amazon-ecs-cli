@@ -42,18 +42,19 @@ const (
 
 // LocalConfig is the top level struct representing the local ECS configuration
 type LocalConfig struct {
-	Version                  int // which format version was the config file that was read. 1 == yaml, 0 == old ini
-	Cluster                  string
-	AWSProfile               string
-	Region                   string
-	AWSAccessKey             string
-	AWSSecretKey             string
-	AWSSessionToken          string
-	ComposeServiceNamePrefix string
-	ComposeProjectNamePrefix string // Deprecated; remains for backwards compatibility
-	CFNStackName             string
-	CFNStackNamePrefix       string // Deprecated; remains for backwards compatibility
-	DefaultLaunchType        string
+	Version                         int // which format version was the config file that was read. 1 == yaml, 0 == old ini
+	Cluster                         string
+	AWSProfile                      string
+	Region                          string
+	AWSAccessKey                    string
+	AWSSecretKey                    string
+	AWSSessionToken                 string
+	ComposeServiceNamePrefix        string
+	ComposeProjectNamePrefix        string // Deprecated; remains for backwards compatibility
+	CFNStackName                    string
+	CFNStackNamePrefix              string // Deprecated; remains for backwards compatibility
+	DefaultLaunchType               string
+	DefaultDeploymentControllerType string
 }
 
 // Profile is a simple struct for storing a single AWS profile config
@@ -171,6 +172,16 @@ func (cfg *LocalConfig) applyFlags(context *cli.Context) error {
 	}
 
 	if err := ValidateLaunchType(cfg.DefaultLaunchType); err != nil {
+		return err
+	}
+
+	// Determine Deployment Controller Type
+	// The deployment controller type flag overrides default deployment controller type stored in the local config
+	if deploymentControllerTypeFromFlag := RecursiveFlagSearch(context, flags.DeploymentControllerTypeFlag); deploymentControllerTypeFromFlag != "" {
+		cfg.DefaultDeploymentControllerType = deploymentControllerTypeFromFlag
+	}
+
+	if err := ValidateDeploymentControllerType(cfg.DefaultDeploymentControllerType); err != nil {
 		return err
 	}
 
@@ -310,6 +321,14 @@ func (cfg *LocalConfig) getRegionFromAWSProfile() (string, error) {
 func ValidateLaunchType(launchType string) error {
 	if (launchType != "") && (launchType != LaunchTypeEC2) && (launchType != LaunchTypeFargate) {
 		return fmt.Errorf("Supported launch types are '%s' and '%s'; %s is not a valid launch type.", LaunchTypeEC2, LaunchTypeFargate, launchType)
+	}
+	return nil
+}
+
+// ValidateDeploymentControllerType checks that the deployment controller type specified was an allowed value
+func ValidateDeploymentControllerType(deploymentControllerType string) error {
+	if (deploymentControllerType != "") && (deploymentControllerType != DeploymentControllerTypeECS) && (deploymentControllerType != DeploymentControllerTypeCodeDeploy) && (deploymentControllerType != DeploymentControllerTypeExternal) {
+		return fmt.Errorf("Supported deployment controller types are '%s', '%s' and '%s'; %s is not a valid deployment controller type.", DeploymentControllerTypeECS, DeploymentControllerTypeCodeDeploy, DeploymentControllerTypeExternal, deploymentControllerType)
 	}
 	return nil
 }

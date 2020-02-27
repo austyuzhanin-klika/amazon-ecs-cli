@@ -19,11 +19,12 @@ import (
 	"path/filepath"
 	"strings"
 
+	cdclient "github.com/aws/amazon-ecs-cli/ecs-cli/modules/clients/aws/codedeploy"
 	ec2client "github.com/aws/amazon-ecs-cli/ecs-cli/modules/clients/aws/ec2"
 	ecsclient "github.com/aws/amazon-ecs-cli/ecs-cli/modules/clients/aws/ecs"
 	"github.com/aws/amazon-ecs-cli/ecs-cli/modules/commands/flags"
 	"github.com/aws/amazon-ecs-cli/ecs-cli/modules/config"
-	"github.com/aws/amazon-ecs-cli/ecs-cli/modules/utils/compose"
+	utils "github.com/aws/amazon-ecs-cli/ecs-cli/modules/utils/compose"
 	"github.com/docker/libcompose/project"
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli"
@@ -42,8 +43,9 @@ type ECSContext struct {
 	ECSParams *utils.ECSParams
 
 	// AWS Service Clients
-	ECSClient ecsclient.ECSClient
-	EC2Client ec2client.EC2Client
+	ECSClient        ecsclient.ECSClient
+	EC2Client        ec2client.EC2Client
+	CodeDeployClient cdclient.CodeDeployClient
 
 	// IsService would decide if the resource created by this compose project would be ECS Tasks directly or through ECS Services
 	IsService bool
@@ -54,6 +56,7 @@ func (ecsContext *ECSContext) Open() error {
 	// setup AWS service clients
 	ecsContext.ECSClient = ecsclient.NewECSClient(ecsContext.CommandConfig)
 	ecsContext.EC2Client = ec2client.NewEC2Client(ecsContext.CommandConfig)
+	ecsContext.CodeDeployClient = cdclient.NewCodeDeployClient(ecsContext.CommandConfig)
 
 	return nil
 }

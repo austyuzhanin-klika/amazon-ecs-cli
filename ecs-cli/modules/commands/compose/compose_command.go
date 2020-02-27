@@ -18,7 +18,7 @@ import (
 	ecscli "github.com/aws/amazon-ecs-cli/ecs-cli/modules"
 	"github.com/aws/amazon-ecs-cli/ecs-cli/modules/cli/compose"
 	composeFactory "github.com/aws/amazon-ecs-cli/ecs-cli/modules/cli/compose/factory"
-	"github.com/aws/amazon-ecs-cli/ecs-cli/modules/commands/compose/service"
+	serviceCommand "github.com/aws/amazon-ecs-cli/ecs-cli/modules/commands/compose/service"
 	"github.com/aws/amazon-ecs-cli/ecs-cli/modules/commands/flags"
 	"github.com/aws/amazon-ecs-cli/ecs-cli/modules/commands/usage"
 	"github.com/urfave/cli"

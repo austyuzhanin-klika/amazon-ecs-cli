@@ -105,6 +105,7 @@ const (
 	ForceFlag                       = "force"
 	EmptyFlag                       = "empty"
 	UserDataFlag                    = "extra-user-data"
+	DeploymentControllerTypeFlag    = "deployment-controller-type"
 
 	// Image
 	RegistryIdFlag = "registry-id"
@@ -234,6 +235,18 @@ func OptionalLaunchTypeFlag() []cli.Flag {
 			Name: LaunchTypeFlag,
 			Usage: fmt.Sprintf(
 				"[Optional] Specifies the launch type. Options: EC2 or FARGATE. Overrides the default launch type stored in your cluster configuration. Defaults to EC2 if a cluster configuration is not used.",
+			),
+		},
+	}
+}
+
+// OptionalDeploymentControllerTypeFlag allows users to specify the controller type for their task/service/cluster
+func OptionalDeploymentControllerTypeFlag() []cli.Flag {
+	return []cli.Flag{
+		cli.StringFlag{
+			Name: DeploymentControllerTypeFlag,
+			Usage: fmt.Sprintf(
+				"[Optional] Specifies the deployment controller type. Options: ECS, CODE_DEPLOY or EXTERNAL. Defaults to ECS.",
 			),
 		},
 	}

@@ -68,7 +68,7 @@ func createServiceCommand(factory composeFactory.ProjectFactory) cli.Command {
 		Name:         "create",
 		Usage:        usage.ServiceCreate,
 		Action:       compose.WithProject(factory, compose.ProjectCreate, true),
-		Flags:        flags.AppendFlags(deploymentConfigFlags(true), loadBalancerFlags(), flags.OptionalConfigFlags(), flags.OptionalLaunchTypeFlag(), flags.OptionalCreateLogsFlag(), serviceDiscoveryFlags(), flags.OptionalSchedulingStrategyFlag(), taggingFlags()),
+		Flags:        flags.AppendFlags(deploymentConfigFlags(true), loadBalancerFlags(), flags.OptionalConfigFlags(), flags.OptionalDeploymentControllerTypeFlag(), flags.OptionalLaunchTypeFlag(), flags.OptionalCreateLogsFlag(), serviceDiscoveryFlags(), flags.OptionalSchedulingStrategyFlag(), taggingFlags()),
 		OnUsageError: flags.UsageErrorFactory("create"),
 	}
 }
